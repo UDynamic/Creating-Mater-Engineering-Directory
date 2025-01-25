@@ -8,13 +8,8 @@ $csvData = Import-Csv -Path $csvPath
 $basePathSent = "C:\Path\To\Engineering\Sent\"
 $basePathReceived = "C:\Path\To\Engineering\Received\"
 
-# Function to create folders for each document
-function Create-Folders {
-    param (
-        $basePath,
-        $suffix
-    )
-    
+# Function to create folders for Sent documents
+function Create-SentFolders {
     foreach ($row in $csvData) {
         $documentBaseName = $row.DocumentNumber + " - " + $row.DocumentName
         
@@ -24,20 +19,36 @@ function Create-Folders {
             
             # Create folder for the revision
             $revFolderName = $documentBaseName + " - Rev " + $revFormatted
-            $revFolderPath = $basePath + $revFolderName
+            $revFolderPath = $basePathSent + $revFolderName
             New-Item -ItemType Directory -Path $revFolderPath -Force
             
-            # Create folder for the RSH/CM
-            $suffixFolderName = $documentBaseName + " - Rev " + $revFormatted + " - " + $suffix
-            $suffixFolderPath = $basePath + $suffixFolderName
-            New-Item -ItemType Directory -Path $suffixFolderPath -Force
+            # Create folder for the RSH
+            $rshFolderName = $documentBaseName + " - Rev " + $revFormatted + " - RSH"
+            $rshFolderPath = $basePathSent + $rshFolderName
+            New-Item -ItemType Directory -Path $rshFolderPath -Force
+        }
+    }
+}
+
+# Function to create folders for Received documents
+function Create-ReceivedFolders {
+    foreach ($row in $csvData) {
+        $documentBaseName = $row.DocumentNumber + " - " + $row.DocumentName
+        
+        for ($rev = 0; $rev -le 6; $rev++) {
+            # Format revision number as two digits
+            $revFormatted = "{0:D2}" -f $rev
+            
+            # Create folder for the CM
+            $cmFolderName = $documentBaseName + " - Rev " + $revFormatted + " - CM"
+            $cmFolderPath = $basePathReceived + $cmFolderName
+            New-Item -ItemType Directory -Path $cmFolderPath -Force
         }
     }
 }
 
 # Create folders for Sent documents
-Create-Folders -basePath $basePathSent -suffix "RSH"
+Create-SentFolders
 
 # Create folders for Received documents
-Create-Folders -basePath $basePathReceived -suffix "CM"
-
+Create-ReceivedFolders
